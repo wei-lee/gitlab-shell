@@ -58,7 +58,7 @@ EXPOSE 2022
 # gitlab-shell setup
 COPY . /home/git/gitlab-shell
 WORKDIR /home/git/gitlab-shell
-RUN ["bash", "-c", "bundle"]
+RUN bundle install
 RUN mkdir /home/git/gitlab-config && \
     ## Setup default config placeholder
     cp config.yml.example ../gitlab-config/config.yml
