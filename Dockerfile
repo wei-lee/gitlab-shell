@@ -50,12 +50,12 @@ RUN adduser --system -s /bin/bash -u 1234321 -g 0 git && \
    chown -Rf root:0 /opt/rh/httpd24/root/usr/local && \
    chown -R root:0 /opt/rh/httpd24/root/etc/httpd && \
    chown -Rf root:0 ${HTTPD_ROOT_DIR}/var/www/html/ && \
+   chown -R root:0 /opt/app-root && \
    mkdir -p $HTTP_REPO_ROOT/$REPO_FOLDER_NAME
 
 EXPOSE 2022
 
 # gitlab-shell setup
-USER root
 COPY . /home/git/gitlab-shell
 WORKDIR /home/git/gitlab-shell
 RUN ["bash", "-c", "bundle"]
