@@ -14,12 +14,16 @@ ADD httpd/root/usr ${HTTPD_ROOT_DIR}/usr
 ADD httpd/root/var/rpm /var/rpm
 COPY httpd/root/etc/httpd/conf.d/*.conf /etc/httpd/conf.d/
 
+RUN yum-config-manager --enable rhel-server-rhscl-7-rpms && \
+    yum-config-manager --enable rhel-7-server-optional-rpms && \
+    yum-config-manager --enable rhel-7-server-ose-3.0-rpms && \
+    INSTALL_PKGS="openssh-server ed libicu-devel rh-ruby23 rh-ruby23-ruby-devel rh-ruby23-rubygem-rake rh-ruby23-rubygem-bundler rh-nodejs4" && \
+    yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS && rpm -V $INSTALL_PKGS && \
+    yum clean all -y
+
 USER root
 # sshd
-RUN ["bash", "-c", "yum install -y --setopt=tsflags=nodocs openssh-server ed libicu-devel && \
-     yum install -y --setopt=tsflags=nodocs rh-ruby23 rh-ruby23-ruby-devel rh-ruby23-rubygem-rake rh-ruby23-rubygem-bundler rh-nodejs4 && \
-     yum clean all -y && \
-     sshd-keygen && \
+RUN ["bash", "-c", "sshd-keygen && \
      mkdir /var/run/sshd"]
 
 RUN stat /var/rpm/rhmap-mod_authnz_external-3.3.1-7.el7map.x86_64.rpm && \
