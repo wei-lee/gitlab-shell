@@ -82,4 +82,7 @@ chmod 700 $GIT_REPO_ROOT
 ## Enable non root ssh by removing nologin
 
 ## Run sshd deamon
-/usr/sbin/sshd -D -e
+/usr/sbin/sshd -e
+
+## Run httpd
+httpd -DFOREGROUND -e ${HTTPD_LOG_LEVEL}

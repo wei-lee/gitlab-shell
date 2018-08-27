@@ -1,10 +1,30 @@
-FROM registry.access.redhat.com/rhscl/ruby-23-rhel7:latest
+FROM registry.access.redhat.com/rhscl/httpd-24-rhel7:latest
+
+ENV HTTPD_ROOT_DIR=/opt/rh/httpd24/root
+ENV HTTPD_BIN_DIR=${HTTPD_ROOT_DIR}/usr/local/bin \
+    HTTP_REPO_ROOT=/home/git/data/gls \
+    PLATFORM_DOCUMENT_ROOT=${HTTPD_ROOT_DIR}/opt/feedhenry \
+    REPO_FOLDER_NAME=repositories \
+    HTTPD_LOG_LEVEL=INFO \
+    HTTPD_GIT_PORT=8000 \
+    HTTPD_PROXY_PORT=8010 \
+    MILLICORE_HTTP_HOST=example.com
+
+ADD httpd/root/usr ${HTTPD_ROOT_DIR}/usr
+ADD httpd/root/var/rpm /var/rpm
+COPY httpd/root/etc/httpd/conf.d/*.conf /etc/httpd/conf.d/
+
 USER root
 # sshd
 RUN ["bash", "-c", "yum install -y --setopt=tsflags=nodocs openssh-server ed libicu-devel && \
-     yum clean all && \
+     yum install -y --setopt=tsflags=nodocs rh-ruby23 rh-ruby23-ruby-devel rh-ruby23-rubygem-rake rh-ruby23-rubygem-bundler rh-nodejs4 && \
+     yum clean all -y && \
      sshd-keygen && \
      mkdir /var/run/sshd"]
+
+RUN stat /var/rpm/rhmap-mod_authnz_external-3.3.1-7.el7map.x86_64.rpm && \
+    rpm -Uvh  /var/rpm/rhmap-mod_authnz_external-3.3.1-7.el7map.x86_64.rpm
+
 # add a user that id a member of the root group. we will replace later with the user assigned to the pod. Change perms to allow the root group to modify and use files as needed. These changes allow the pod assigned user to be part of the root group and have a real uid assigned
 RUN adduser --system -s /bin/bash -u 1234321 -g 0 git && \ 
    chown root:root /etc/ssh/* /home && \
@@ -14,9 +34,19 @@ RUN adduser --system -s /bin/bash -u 1234321 -g 0 git && \
    chmod 775 /var/run && \
    mkdir -p /home/git/data/gls && \
    chmod -R 775 /home/git && \
-   chmod -R 775 /opt/app-root
-  
+   chmod -R 775 /opt/app-root && \
+   chmod 775 -R /var/log/httpd24 && \
+   ls -al /var/log && \
+   chmod -Rf +rx ${HTTPD_BIN_DIR}/ && \
+   chmod -R 775 /opt/rh/httpd24/root/usr/local && \
+   chmod -R 775 /opt/rh/httpd24/root/etc/httpd && \
+   chown -Rf root:0 /opt/rh/httpd24/root/usr/local && \
+   chown -R root:0 /opt/rh/httpd24/root/etc/httpd && \
+   chown -Rf root:0 ${HTTPD_ROOT_DIR}/var/www/html/ && \
+   mkdir -p $HTTP_REPO_ROOT/$REPO_FOLDER_NAME
+
 EXPOSE 2022
+
 # gitlab-shell setup
 USER root
 COPY . /home/git/gitlab-shell
