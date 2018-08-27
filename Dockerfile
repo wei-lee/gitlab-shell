@@ -14,6 +14,8 @@ ADD httpd/root/usr ${HTTPD_ROOT_DIR}/usr
 ADD httpd/root/var/rpm /var/rpm
 COPY httpd/root/etc/httpd/conf.d/*.conf /etc/httpd/conf.d/
 
+USER root
+
 RUN yum-config-manager --enable rhel-server-rhscl-7-rpms && \
     yum-config-manager --enable rhel-7-server-optional-rpms && \
     yum-config-manager --enable rhel-7-server-ose-3.0-rpms && \
@@ -21,7 +23,6 @@ RUN yum-config-manager --enable rhel-server-rhscl-7-rpms && \
     yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS && rpm -V $INSTALL_PKGS && \
     yum clean all -y
 
-USER root
 # sshd
 RUN ["bash", "-c", "sshd-keygen && \
      mkdir /var/run/sshd"]
