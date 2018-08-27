@@ -23,6 +23,8 @@ RUN yum-config-manager --enable rhel-server-rhscl-7-rpms && \
     yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS && rpm -V $INSTALL_PKGS && \
     yum clean all -y
 
+COPY ruby/contrib/ /opt/app-root
+
 # sshd
 RUN ["bash", "-c", "sshd-keygen && \
      mkdir /var/run/sshd"]
